@@ -57,35 +57,35 @@ jobs:
   # =========================
   # CD
   # =========================
-  terraform-cd:
-    name: Terraform CD
-    needs: terraform-ci
+  # terraform-cd:
+  #   name: Terraform CD
+  #   needs: terraform-ci
 
-    # IMPORTANT:
-    # CD only after merge/push to main
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   # IMPORTANT:
+  #   # CD only after merge/push to main
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    environment:
-      name: production
+  #   environment:
+  #     name: production
 
-    defaults:
-      run:
-        working-directory: enviroment/dev
+  #   defaults:
+  #     run:
+  #       working-directory: enviroment/dev
 
-    steps:
+  #   steps:
 
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@v3
+  #       with:
+  #         terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Terraform Init
-        run: terraform init
+  #     - name: Terraform Init
+  #       run: terraform init
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+  #     - name: Terraform Apply
+  #       run: terraform apply -auto-approve
