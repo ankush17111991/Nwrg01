@@ -1,1 +1,4 @@
 # Nwrg01
+
+.gitignore
+
