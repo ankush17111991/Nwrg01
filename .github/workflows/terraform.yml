@@ -4,27 +4,20 @@ on:
   push:
     branches:
       - main
+      - "feature/**"
 
   pull_request:
     branches:
       - main
-
 
   workflow_dispatch:
 
 permissions:
   contents: read
 
-env:
-  TF_VERSION: "1.9.8"
-
 jobs:
-
-  # =========================
-  # CI
-  # =========================
-  terraform-ci:
-    name: Terraform CI
+  terraform-scan:
+    name: Terraform CI & Security Scan
     runs-on: ubuntu-latest
 
     defaults:
@@ -33,59 +26,42 @@ jobs:
 
     steps:
 
-      - name: Checkout code
+      # 1. Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # 2. Install Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
 
+      # 3. Terraform Format
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
+      # 4. Terraform Init
+      # No Azure authentication required for validation
       - name: Terraform Init
         run: terraform init -backend=false
 
+      # 5. Terraform Validate
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Terraform Plan
-        run: terraform plan
+      # 6. Install TFLint
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
 
+      # 7. TFLint
+      - name: Run TFLint
+        run: |
+          tflint --init
+          tflint
 
-  # =========================
-  # CD
-  # =========================
-  # terraform-cd:
-  #   name: Terraform CD
-  #   needs: terraform-ci
-
-  #   # IMPORTANT:
-  #   # CD only after merge/push to main
-  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-  #   runs-on: ubuntu-latest
-
-  #   environment:
-  #     name: production
-
-  #   defaults:
-  #     run:
-  #       working-directory: enviroment/dev
-
-  #   steps:
-
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Setup Terraform
-  #       uses: hashicorp/setup-terraform@v3
-  #       with:
-  #         terraform_version: ${{ env.TF_VERSION }}
-
-  #     - name: Terraform Init
-  #       run: terraform init
-
-  #     - name: Terraform Apply
-  #       run: terraform apply -auto-approve
+      # 8. Trivy Security Scan
+      - name: Run Trivy Terraform Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: 1
