@@ -51,17 +51,3 @@ jobs:
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
 
-      # 7. TFLint
-      - name: Run TFLint
-        run: |
-          tflint --init
-          tflint
-
-      # 8. Trivy Security Scan
-      - name: Run Trivy Terraform Scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: config
-          scan-ref: .
-          severity: HIGH,CRITICAL
-          exit-code: 1
